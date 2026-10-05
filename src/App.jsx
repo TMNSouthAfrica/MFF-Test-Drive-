@@ -16,6 +16,8 @@ const RATING_OPTIONS = [
   { label: 'Unacceptable', color: 'bg-[#e2445c]' },
 ]
 
+const VEHICLE_MODELS = ['3XO', 'XUV700', 'Scorpio N', 'PIK UP Single Cab', 'PIK UP Double Cab']
+
 const DISSATISFACTION_REASONS = [
   'Route was not suitable for the vehicle',
   'Sales Consultant was not knowledgeable about the vehicle',
@@ -101,6 +103,7 @@ export default function App() {
   const [submittedAt, setSubmittedAt] = useState(null)
   const [validationError, setValidationError] = useState('')
 
+  const [vehicleModel, setVehicleModel] = useState('')
   const [overallExperience, setOverallExperience] = useState(null)
   const [dissatisfactionReason, setDissatisfactionReason] = useState([])
   const [otherReasonText, setOtherReasonText] = useState('')
@@ -130,6 +133,7 @@ export default function App() {
   useEffect(() => {
     setValidationError('')
   }, [
+    vehicleModel,
     overallExperience,
     dissatisfactionReason,
     otherReasonText,
@@ -142,8 +146,10 @@ export default function App() {
   ])
 
   const needsReasonStep = isLowVehicleRating(overallExperience)
-  const totalSteps = needsReasonStep ? 4 : 3
-  const steps = needsReasonStep ? ['overall', 'reasons', 'vehicle', 'feedback'] : ['overall', 'vehicle', 'feedback']
+  const steps = needsReasonStep
+    ? ['model', 'overall', 'reasons', 'vehicle', 'feedback']
+    : ['model', 'overall', 'vehicle', 'feedback']
+  const totalSteps = steps.length
   const stepKey = steps[currentStep - 1]
   const isLastStep = currentStep === totalSteps
 
@@ -185,6 +191,8 @@ export default function App() {
   // Returns an error message for the current step, or '' if it is valid
   const getStepError = () => {
     switch (stepKey) {
+      case 'model':
+        return vehicleModel ? '' : 'Please select the vehicle you test drove'
       case 'overall':
         return overallExperience ? '' : 'Please select a rating to continue'
       case 'reasons':
@@ -254,6 +262,7 @@ export default function App() {
       responseType: 'Test Drive Feedback',
       reviewStatus: 'New',
 
+      vehicleModel,
       overallExperience,
       dissatisfactionReasons: reasons.length > 0 ? reasons : null,
       unsatisfactoryFacility: reasons.includes(AMENITIES_REASON) && facilityValue ? facilityValue : null,
@@ -360,7 +369,7 @@ export default function App() {
               <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                 {[
                   { icon: Clock, label: 'Duration', value: '2-3 minutes' },
-                  { icon: FileText, label: 'Questions', value: '3–4 short questions' },
+                  { icon: FileText, label: 'Questions', value: '4–5 short questions' },
                 ].map(({ icon: Icon, label, value }) => (
                   <div key={label} className="flex items-center gap-3 rounded-lg border border-gray-200 p-3 sm:flex-col sm:text-center">
                     <Icon className="h-5 w-5 shrink-0 text-[#E31837]" />
@@ -456,6 +465,30 @@ export default function App() {
 
   // ---------- Survey steps ----------
   const stepConfig = {
+    model: {
+      title: `Which vehicle did you test drive${atDealer}?`,
+      description: 'Select the model you test drove from the list',
+      content: (
+        <div className="space-y-2">
+          <Label htmlFor="vehicle-model" className="text-gray-700">
+            Vehicle <span className="text-[#E31837]">*</span>
+          </Label>
+          <select
+            id="vehicle-model"
+            value={vehicleModel}
+            onChange={(e) => setVehicleModel(e.target.value)}
+            className="h-12 w-full rounded-lg border-2 border-gray-200 bg-white px-3 text-base text-[#1a1a1a] focus:border-[#E31837] focus:outline-none"
+          >
+            <option value="">Select a vehicle...</option>
+            {VEHICLE_MODELS.map((model) => (
+              <option key={model} value={model}>
+                {model}
+              </option>
+            ))}
+          </select>
+        </div>
+      ),
+    },
     overall: {
       title: `How would you rate your overall Test Drive Experience${atDealer}?`,
       description: 'Rate your overall test drive experience at the dealership',
