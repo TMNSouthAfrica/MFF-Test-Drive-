@@ -1,5 +1,8 @@
 // Shared by the spin wheel (src/components/SpinWheel.jsx) and the draw (api/spin.js).
 // Edit this list to change prizes; images live in public/prizes/.
+// TESTING: true shows a "Spin again" button after every result. Set to false for one spin per submission.
+export const ALLOW_RESPIN = true
+
 export const PRIZES = [
   { id: '3xo', name: '3XO', image: '/prizes/3xo.webp' },
   { id: 'xuv700', name: 'XUV700', image: '/prizes/xuv700.webp' },

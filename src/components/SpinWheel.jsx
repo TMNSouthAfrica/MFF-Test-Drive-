@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import confetti from 'canvas-confetti'
 import { AlertCircle, Gift, PartyPopper, RotateCw, Sparkles } from 'lucide-react'
 import { cn } from '@lib/utils'
-import { PRIZES, WHEEL_SEGMENTS } from '@/config/prizes'
+import { ALLOW_RESPIN, PRIZES, WHEEL_SEGMENTS } from '@/config/prizes'
 
 const SPIN_MS = 5500
 const SEGMENT_ANGLE = 360 / WHEEL_SEGMENTS.length
@@ -144,7 +144,7 @@ function Wheel({ rotation, spinning }) {
 }
 
 export default function SpinWheel({ surveyId, dealer, vehicleModel }) {
-  // One spin per submission: a new submission mounts a fresh wheel
+  // A new submission mounts a fresh wheel; ALLOW_RESPIN adds a "Spin again" button
   const [phase, setPhase] = useState('ready') // ready | loading | spinning | win | lose | error
   const [outcome, setOutcome] = useState(null)
   const [rotation, setRotation] = useState(0)
@@ -183,7 +183,8 @@ export default function SpinWheel({ surveyId, dealer, vehicleModel }) {
     const jitter = (Math.random() - 0.5) * SEGMENT_ANGLE * 0.35 // stay well inside the segment
     const reducedMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
     const turns = reducedMotion ? 1 : 7
-    setRotation(turns * 360 + (360 - center) + jitter)
+    // Continue from where the wheel stopped last time so respins always turn forwards
+    setRotation((current) => Math.ceil(current / 360) * 360 + turns * 360 + (360 - center) + jitter)
     setPhase('spinning')
 
     const finished = { ...data, spunAt: new Date().toISOString() }
@@ -198,6 +199,11 @@ export default function SpinWheel({ surveyId, dealer, vehicleModel }) {
   const prize = outcome?.prizeId ? prizeById(outcome.prizeId) : null
   const showWheel = phase === 'ready' || phase === 'loading' || phase === 'spinning' || phase === 'error'
 
+  const spinAgain = () => {
+    setOutcome(null)
+    setPhase('ready')
+  }
+
   return (
     <div className="overflow-hidden rounded-xl bg-gradient-to-br from-[#1a1a1a] via-[#2a0a10] to-[#E31837] p-5 text-white shadow-xl sm:p-6">
       {showWheel && (
@@ -207,7 +213,7 @@ export default function SpinWheel({ surveyId, dealer, vehicleModel }) {
               <Sparkles className="h-3.5 w-3.5" /> Thank-you reward
             </p>
             <h2 className="mt-3 text-2xl font-extrabold sm:text-3xl">Spin to win a Mahindra!</h2>
-            <p className="mt-1 text-sm text-white/80">One spin per submission. Land on a vehicle to win it.</p>
+            <p className="mt-1 text-sm text-white/80">{ALLOW_RESPIN ? 'Land on a vehicle to win it.' : 'One spin per submission. Land on a vehicle to win it.'}</p>
           </div>
 
           <Wheel rotation={rotation} spinning={phase === 'spinning'} />
@@ -268,8 +274,20 @@ export default function SpinWheel({ surveyId, dealer, vehicleModel }) {
             You didn't land on a prize today, but thank you for taking part. Your feedback helps us build even better
             vehicles.
           </p>
-          <p className="mt-4 text-xs text-white/60">Complete another test drive survey for another spin.</p>
+          {!ALLOW_RESPIN && (
+            <p className="mt-4 text-xs text-white/60">Complete another test drive survey for another spin.</p>
+          )}
         </div>
+      )}
+      {ALLOW_RESPIN && (phase === 'win' || phase === 'lose') && (
+        <button
+          type="button"
+          onClick={spinAgain}
+          className="mt-5 flex h-12 w-full items-center justify-center gap-2 rounded-xl border-2 border-[#FFD700] font-bold text-[#FFD700] transition-colors hover:bg-[#FFD700] hover:text-[#1a1a1a] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
+        >
+          <RotateCw className="h-5 w-5" />
+          Spin again
+        </button>
       )}
     </div>
   )
