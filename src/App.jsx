@@ -67,7 +67,7 @@ function readUrlParams() {
 function Logo({ src = LOGO_SRC, className, fallbackClassName }) {
   const [failed, setFailed] = useState(false)
   if (failed) {
-    return <span className={cn('font-extrabold tracking-[0.2em]', fallbackClassName)}>MAHINDRA</span>
+    return <span className={cn('font-extrabold lowercase tracking-wide', fallbackClassName)}>mahindra</span>
   }
   return <img src={src} alt="Mahindra" className={className} onError={() => setFailed(true)} />
 }
@@ -298,6 +298,7 @@ export default function App() {
         <div className="flex items-center justify-center px-4 py-12">
           <Card className="w-full max-w-md shadow-xl">
             <CardContent className="flex flex-col items-center p-8 text-center">
+              <Logo className="mb-6 h-16 sm:h-20" fallbackClassName="mb-6 text-3xl text-[#E31837]" />
               <AlertCircle className="mb-4 h-16 w-16 text-[#E31837] sm:h-20 sm:w-20" />
               <h1 className="mb-2 text-2xl font-bold text-[#1a1a1a]">Survey Link Expired</h1>
               <p className="mb-4 text-gray-600">This survey link is no longer active.</p>
@@ -320,6 +321,7 @@ export default function App() {
         <div className="flex items-center justify-center px-4 py-12">
           <Card className="w-full max-w-md shadow-xl">
             <CardContent className="flex flex-col items-center p-8 text-center">
+              <Logo className="mb-6 h-16 sm:h-20" fallbackClassName="mb-6 text-3xl text-[#E31837]" />
               <CheckCircle2 className="mb-4 h-16 w-16 text-[#00c875] sm:h-20 sm:w-20" />
               <h1 className="mb-2 text-2xl font-bold text-[#1a1a1a]">Thank you for your feedback!</h1>
               <p className="mb-2 text-gray-600">Your responses have been recorded securely.</p>
@@ -340,7 +342,7 @@ export default function App() {
     return (
       <div className="safe-area-bottom min-h-screen bg-gray-100">
         <Header />
-        <main className="mx-auto max-w-2xl px-4 py-6 sm:px-6 sm:py-10">
+        <main className="mx-auto max-w-2xl px-4 py-6 sm:py-10">
           <Card className="shadow-xl">
             <CardContent className="space-y-6 p-6 sm:p-8">
               <div className="flex flex-col items-center text-center">
@@ -520,8 +522,11 @@ export default function App() {
   return (
     <div className="safe-area-bottom min-h-screen bg-gray-100">
       <Header />
-      <main className="mx-auto max-w-2xl px-3 py-4 sm:px-4 sm:py-8">
-        <p className="mb-2 text-xs font-medium text-gray-500 sm:text-sm">Test Drive Experience Survey</p>
+      <main className="mx-auto max-w-2xl px-4 py-4 sm:py-8">
+        <div className="mb-3 flex items-center gap-3">
+          <Logo className="h-9 sm:h-10" fallbackClassName="text-lg text-[#E31837]" />
+          <p className="text-xs font-medium text-gray-500 sm:text-sm">Test Drive Experience Survey</p>
+        </div>
         <ProgressStepper currentStep={currentStep} totalSteps={totalSteps} />
 
         <Card className="shadow-lg">
