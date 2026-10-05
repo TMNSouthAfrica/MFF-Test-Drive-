@@ -25,23 +25,6 @@ function segmentPath(index, r = 92) {
   return `M0 0 L${x0} ${y0} A${r} ${r} 0 0 1 ${x1} ${y1} Z`
 }
 
-function readStored(key) {
-  try {
-    const raw = window.localStorage.getItem(key)
-    return raw ? JSON.parse(raw) : null
-  } catch {
-    return null
-  }
-}
-
-function writeStored(key, value) {
-  try {
-    window.localStorage.setItem(key, JSON.stringify(value))
-  } catch {
-    // Storage unavailable (private mode etc.) — the spin still works, it just isn't remembered
-  }
-}
-
 function celebrate() {
   const colors = ['#E31837', '#FFD700', '#ffffff', '#00c875']
   confetti({ particleCount: 140, spread: 90, origin: { y: 0.55 }, colors })
@@ -161,11 +144,9 @@ function Wheel({ rotation, spinning }) {
 }
 
 export default function SpinWheel({ surveyId, dealer, vehicleModel }) {
-  const storageKey = `mff-spin-${surveyId || 'no-id'}`
-  const stored = useRef(readStored(storageKey)).current
-
-  const [phase, setPhase] = useState(stored ? stored.result : 'ready') // ready | loading | spinning | win | lose | error
-  const [outcome, setOutcome] = useState(stored)
+  // One spin per submission: a new submission mounts a fresh wheel
+  const [phase, setPhase] = useState('ready') // ready | loading | spinning | win | lose | error
+  const [outcome, setOutcome] = useState(null)
   const [rotation, setRotation] = useState(0)
   const timer = useRef(null)
 
@@ -206,7 +187,6 @@ export default function SpinWheel({ surveyId, dealer, vehicleModel }) {
     setPhase('spinning')
 
     const finished = { ...data, spunAt: new Date().toISOString() }
-    writeStored(storageKey, finished)
 
     timer.current = setTimeout(() => {
       setOutcome(finished)
@@ -227,7 +207,7 @@ export default function SpinWheel({ surveyId, dealer, vehicleModel }) {
               <Sparkles className="h-3.5 w-3.5" /> Thank-you reward
             </p>
             <h2 className="mt-3 text-2xl font-extrabold sm:text-3xl">Spin to win a Mahindra!</h2>
-            <p className="mt-1 text-sm text-white/80">One spin per survey. Land on a vehicle to win it.</p>
+            <p className="mt-1 text-sm text-white/80">One spin per submission. Land on a vehicle to win it.</p>
           </div>
 
           <Wheel rotation={rotation} spinning={phase === 'spinning'} />
@@ -288,7 +268,7 @@ export default function SpinWheel({ surveyId, dealer, vehicleModel }) {
             You didn't land on a prize today, but thank you for taking part. Your feedback helps us build even better
             vehicles.
           </p>
-          <p className="mt-4 text-xs text-white/60">One spin per survey.</p>
+          <p className="mt-4 text-xs text-white/60">Complete another test drive survey for another spin.</p>
         </div>
       )}
     </div>

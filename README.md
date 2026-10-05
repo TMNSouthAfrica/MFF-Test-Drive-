@@ -34,5 +34,5 @@ After submitting, customers get one spin of a prize wheel (`src/components/SpinW
 - **The server decides the result.** `api/spin.js` draws win/lose (`SPIN_WIN_CHANCE`, default 3%), then the wheel animates to land on it. The browser cannot choose its own result.
 - **Every spin is recorded** in Pabbly with `responseType: "Spin Result"`, `spinResult`, `prize` and a `claimCode` (e.g. `MSA-7KQ2-X9PD`), plus `surveyId`, `dealer` and `vehicleModel`. Verify winners' claim codes against these records. If recording fails, no result is shown.
 - **Prizes and wheel layout** are in `src/config/prizes.js`; vehicle photos are in `public/prizes/`.
-- **One spin per survey** is remembered in the browser per `id`. For hard enforcement, dedupe by `surveyId` in Pabbly.
+- **One spin per submission.** Every completed submission gets a fresh spin, including resubmissions from the same link. To limit wins per customer, filter by `surveyId` in Pabbly.
 - **Testing:** set `SPIN_FORCE_RESULT=win` (or `lose`, `3xo`, `xuv700`, `scorpio-n`) on a Preview deployment only.
