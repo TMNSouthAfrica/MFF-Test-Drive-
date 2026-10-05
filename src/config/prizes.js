@@ -13,11 +13,11 @@ export const PRIZES = [
 export const WHEEL_SEGMENTS = [
   { type: 'prize', prizeId: '3xo' },
   { type: 'lose', label: 'Try again' },
-  { type: 'lose', label: 'So close!' },
+  { type: 'lose', label: 'So close' },
   { type: 'prize', prizeId: 'xuv700' },
   { type: 'lose', label: 'Not this time' },
-  { type: 'lose', label: 'Almost!' },
+  { type: 'lose', label: 'Almost' },
   { type: 'prize', prizeId: 'scorpio-n' },
   { type: 'lose', label: 'Next time' },
-  { type: 'lose', label: 'Unlucky!' },
+  { type: 'lose', label: 'Try again' },
 ]
