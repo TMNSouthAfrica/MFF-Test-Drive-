@@ -29,7 +29,6 @@ const DISSATISFACTION_REASONS = [
 ]
 
 const LOGO_SRC = '/mahindra-logo.png'
-const LOGO_WHITE_SRC = '/mahindra-logo-white.png'
 
 const isLowVehicleRating = (value) => value === 'Poor' || value === 'Unacceptable'
 
@@ -76,7 +75,9 @@ function Header() {
   return (
     <header className="w-full bg-gradient-to-r from-[#E31837] to-[#b81226] py-3 sm:py-4">
       <div className="mx-auto flex max-w-2xl justify-center px-4 sm:justify-start">
-        <Logo src={LOGO_WHITE_SRC} className="h-10 sm:h-12" fallbackClassName="text-xl text-white sm:text-2xl" />
+        <div className="rounded-lg bg-white px-3 py-1.5 shadow-sm">
+          <Logo className="h-9 sm:h-11" fallbackClassName="text-xl text-[#E31837] sm:text-2xl" />
+        </div>
       </div>
     </header>
   )
