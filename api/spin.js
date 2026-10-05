@@ -3,7 +3,7 @@ import { PRIZES } from '../src/config/prizes.js'
 import { forwardToPabbly } from './_pabbly.js'
 
 // Total chance (0–1) that a spin wins any vehicle. Override with the SPIN_WIN_CHANCE env var.
-const DEFAULT_WIN_CHANCE = 0.03
+const DEFAULT_WIN_CHANCE = 0.5 // TESTING: 50% win / 50% lose. Lower before going live.
 const CLAIM_ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'
 
 const clean = (value, max = 200) => (typeof value === 'string' ? value.trim().slice(0, max) : null) || null
