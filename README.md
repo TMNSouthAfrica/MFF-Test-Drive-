@@ -17,7 +17,7 @@ npm run build
 | Where | What |
 |---|---|
 | Vercel → Settings → Environment Variables | `PABBLY_WEBHOOK_URL` (required) |
-| `public/` | `mahindra-logo.webp`, `icon.svg`, `apple-icon.png`, `icon-light-32x32.png`, `icon-dark-32x32.png`. Until the logo is added, a "MAHINDRA" text wordmark is shown. |
+| `public/` | `mahindra-logo.png` (colour, welcome card), `mahindra-logo-white.png` (header) — both generated from `design/mahindra-logo-source.jpg`; `icon.svg`, `apple-icon.png`, `icon-light-32x32.png`, `icon-dark-32x32.png`. Until the logo is added, a "MAHINDRA" text wordmark is shown. |
 
 ## URL parameters
 

@@ -28,7 +28,8 @@ const DISSATISFACTION_REASONS = [
   OTHER_REASON,
 ]
 
-const LOGO_SRC = '/mahindra-logo.webp'
+const LOGO_SRC = '/mahindra-logo.png'
+const LOGO_WHITE_SRC = '/mahindra-logo-white.png'
 
 const isLowVehicleRating = (value) => value === 'Poor' || value === 'Unacceptable'
 
@@ -63,19 +64,19 @@ function readUrlParams() {
 }
 
 // Falls back to a text wordmark until the real logo file is added to /public
-function Logo({ className, fallbackClassName }) {
+function Logo({ src = LOGO_SRC, className, fallbackClassName }) {
   const [failed, setFailed] = useState(false)
   if (failed) {
     return <span className={cn('font-extrabold tracking-[0.2em]', fallbackClassName)}>MAHINDRA</span>
   }
-  return <img src={LOGO_SRC} alt="Mahindra" className={className} onError={() => setFailed(true)} />
+  return <img src={src} alt="Mahindra" className={className} onError={() => setFailed(true)} />
 }
 
 function Header() {
   return (
     <header className="w-full bg-gradient-to-r from-[#E31837] to-[#b81226] py-3 sm:py-4">
       <div className="mx-auto flex max-w-2xl justify-center px-4 sm:justify-start">
-        <Logo className="h-8 sm:h-10" fallbackClassName="text-xl text-white sm:text-2xl" />
+        <Logo src={LOGO_WHITE_SRC} className="h-10 sm:h-12" fallbackClassName="text-xl text-white sm:text-2xl" />
       </div>
     </header>
   )
@@ -343,7 +344,7 @@ export default function App() {
           <Card className="shadow-xl">
             <CardContent className="space-y-6 p-6 sm:p-8">
               <div className="flex flex-col items-center text-center">
-                <Logo className="mb-4 h-12 sm:h-16" fallbackClassName="mb-4 text-3xl text-[#E31837] sm:text-4xl" />
+                <Logo className="mb-4 h-20 sm:h-24" fallbackClassName="mb-4 text-3xl text-[#E31837] sm:text-4xl" />
                 <h1 className="text-2xl font-bold text-[#1a1a1a] sm:text-3xl">Test Drive Experience Survey</h1>
                 <p className="mt-1 font-semibold text-[#E31837]">Mahindra South Africa</p>
                 <p className="mt-3 text-gray-600">
