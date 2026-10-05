@@ -16,7 +16,7 @@ npm run build
 
 | Where | What |
 |---|---|
-| Vercel → Settings → Environment Variables | `PABBLY_WEBHOOK_URL` (required) |
+| Vercel → Settings → Environment Variables | `PABBLY_WEBHOOK_URL` (required). Optional spin settings: see `.env.example` |
 | `public/` | `mahindra-logo.png` (used on every screen, including the header), `mahindra-logo-white.png` (spare white version) — both generated from `design/mahindra-logo-source.jpg` by `python3 design/make-logos.py`; `icon.svg`, `apple-icon.png`, `icon-light-32x32.png`, `icon-dark-32x32.png`. Until the logo is added, a "MAHINDRA" text wordmark is shown. |
 
 ## URL parameters
@@ -26,3 +26,13 @@ npm run build
 - `id` → `surveyId` in the payload
 - `dealer` → `dealer` in the payload, and appended to every question title
 - `expires` → after 23:59:59 local time on that date the Expired screen is shown
+
+## Spin to win (thank-you page)
+
+After submitting, customers get one spin of a prize wheel (`src/components/SpinWheel.jsx`).
+
+- **The server decides the result.** `api/spin.js` draws win/lose (`SPIN_WIN_CHANCE`, default 3%), then the wheel animates to land on it. The browser cannot choose its own result.
+- **Every spin is recorded** in Pabbly with `responseType: "Spin Result"`, `spinResult`, `prize` and a `claimCode` (e.g. `MSA-7KQ2-X9PD`), plus `surveyId`, `dealer` and `vehicleModel`. Verify winners' claim codes against these records. If recording fails, no result is shown.
+- **Prizes and wheel layout** are in `src/config/prizes.js`; vehicle photos are in `public/prizes/`.
+- **One spin per survey** is remembered in the browser per `id`. For hard enforcement, dedupe by `surveyId` in Pabbly.
+- **Testing:** set `SPIN_FORCE_RESULT=win` (or `lose`, `3xo`, `xuv700`, `scorpio-n`) on a Preview deployment only.

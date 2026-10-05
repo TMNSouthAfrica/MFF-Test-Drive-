@@ -1,3 +1,5 @@
+import { forwardToPabbly } from './_pabbly.js'
+
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*')
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
@@ -28,15 +30,9 @@ export default async function handler(req, res) {
   }
 
   try {
-    const pabblyResponse = await fetch(webhookUrl, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: typeof req.body === 'string' ? req.body : JSON.stringify(req.body),
-    })
+    const pabblyResponse = await forwardToPabbly(req.body, webhookUrl)
 
     if (!pabblyResponse.ok) {
-      const text = await pabblyResponse.text().catch(() => '')
-      console.error('Pabbly responded with status', pabblyResponse.status, text.slice(0, 500))
       return res.status(502).json({ error: 'Pabbly rejected the submission', status: pabblyResponse.status })
     }
 

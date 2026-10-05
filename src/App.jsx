@@ -7,6 +7,7 @@ import ProgressStepper from '@components/ProgressStepper'
 import RatingButtons from '@components/RatingButtons'
 import ReasonSelector, { AMENITIES_REASON, OTHER_REASON } from '@components/ReasonSelector'
 import FeedbackTextarea from '@components/FeedbackTextarea'
+import SpinWheel from '@components/SpinWheel'
 
 const RATING_OPTIONS = [
   { label: 'Excellent', color: 'bg-[#00c875]' },
@@ -329,8 +330,8 @@ export default function App() {
     return (
       <div className="safe-area-bottom min-h-screen bg-gray-100">
         <Header />
-        <div className="flex items-center justify-center px-4 py-12">
-          <Card className="w-full max-w-md shadow-xl">
+        <div className="mx-auto flex max-w-md flex-col gap-6 px-4 py-8 sm:py-12">
+          <Card className="w-full shadow-xl">
             <CardContent className="flex flex-col items-center p-8 text-center">
               <Logo className="mb-6 h-16 sm:h-20" fallbackClassName="mb-6 text-3xl text-[#E31837]" />
               <CheckCircle2 className="mb-4 h-16 w-16 text-[#00c875] sm:h-20 sm:w-20" />
@@ -343,6 +344,8 @@ export default function App() {
               </p>
             </CardContent>
           </Card>
+
+          <SpinWheel surveyId={surveyId} dealer={dealerName} vehicleModel={vehicleModel} />
         </div>
       </div>
     )
