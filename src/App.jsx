@@ -164,7 +164,7 @@ export default function App() {
   const vehicleAspects = [
     {
       key: 'performance',
-      label: 'a) Overall performance',
+      label: `${vehicleModel} – Overall performance`,
       value: vehiclePerformance,
       setValue: setVehiclePerformance,
       feedback: vehiclePerformanceFeedback,
@@ -172,7 +172,7 @@ export default function App() {
     },
     {
       key: 'comfort',
-      label: 'b) Level of comfort',
+      label: `${vehicleModel} – Level of comfort`,
       value: vehicleComfort,
       setValue: setVehicleComfort,
       feedback: vehicleComfortFeedback,
@@ -180,7 +180,7 @@ export default function App() {
     },
     {
       key: 'features',
-      label: 'c) Features',
+      label: `${vehicleModel} – Features`,
       value: vehicleFeatures,
       setValue: setVehicleFeatures,
       feedback: vehicleFeaturesFeedback,
