@@ -287,7 +287,10 @@ export default function App() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
       })
-      if (!response.ok) throw new Error(`Submit failed with status ${response.status}`)
+      if (!response.ok) {
+        const detail = await response.text().catch(() => '')
+        throw new Error(`Submit failed with status ${response.status}: ${detail}`)
+      }
       setSubmittedAt(now)
       setIsComplete(true)
     } catch (error) {
