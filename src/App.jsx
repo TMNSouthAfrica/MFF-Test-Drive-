@@ -357,11 +357,10 @@ export default function App() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                 {[
                   { icon: Clock, label: 'Duration', value: '2-3 minutes' },
                   { icon: FileText, label: 'Questions', value: '3–4 short questions' },
-                  { icon: Shield, label: 'Valid for', value: '7 days' },
                 ].map(({ icon: Icon, label, value }) => (
                   <div key={label} className="flex items-center gap-3 rounded-lg border border-gray-200 p-3 sm:flex-col sm:text-center">
                     <Icon className="h-5 w-5 shrink-0 text-[#E31837]" />
@@ -559,7 +558,7 @@ export default function App() {
         </Card>
 
         <p className="mt-4 text-center text-xs text-gray-500">
-          Survey link valid for 7 days | Your data is protected under POPIA
+          Your data is protected under POPIA
         </p>
       </main>
     </div>
