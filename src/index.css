@@ -6,6 +6,7 @@
 
 @layer base {
   :root {
+    color-scheme: only light;
     --primary: 355 82% 49%;
     --background: 0 0% 98%;
     --foreground: 0 0% 10%;
@@ -27,6 +28,19 @@
 
   button, a, input, textarea, select {
     -webkit-tap-highlight-color: transparent;
+  }
+}
+
+/* Dark-mode devices: keep the designed colours. Declaring a prefers-color-scheme rule also tells
+   Samsung Internet the page handles dark mode itself, so it doesn't apply its own darkening. */
+@media (prefers-color-scheme: dark) {
+  :root {
+    color-scheme: only light;
+  }
+  html,
+  body {
+    background-color: #f9fafb;
+    color: #1a1a1a;
   }
 }
 
