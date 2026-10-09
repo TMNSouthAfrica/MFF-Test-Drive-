@@ -34,66 +34,59 @@ function celebrate() {
   setTimeout(() => confetti({ ...base, particleCount: 50, spread: 110, startVelocity: 25, origin: { y: 0.35 } }), 350)
 }
 
+const VIEWBOX = '-100 -100 200 200'
+
+function RimGradient({ id }) {
+  return (
+    <linearGradient id={id} x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stopColor="#f6e7b0" />
+      <stop offset="30%" stopColor="#c9a35a" />
+      <stop offset="55%" stopColor="#7a5a24" />
+      <stop offset="80%" stopColor="#e8d08a" />
+      <stop offset="100%" stopColor="#8a6a2f" />
+    </linearGradient>
+  )
+}
+
+// Three stacked layers: static rim, rotating face, static sheen + hub.
+// The face rotates as an HTML element (not an SVG group) so the spin works reliably in Safari/iOS too.
 function Wheel({ rotation, spinning }) {
   let loseCount = 0
   return (
-    <div className="relative mx-auto aspect-square w-full max-w-[320px]">
+    <div className="relative mx-auto aspect-square w-full max-w-[320px]" role="img" aria-label="Prize wheel">
       {/* Soft gold halo behind the wheel */}
       <div className="pointer-events-none absolute inset-[-8%] rounded-full bg-[radial-gradient(circle,rgba(201,163,90,0.22)_0%,rgba(201,163,90,0)_65%)]" />
 
-      {/* Pointer */}
-      <div className="absolute left-1/2 top-[-10px] z-20 -translate-x-1/2 drop-shadow-[0_4px_6px_rgba(0,0,0,0.6)]">
-        <svg width="26" height="40" viewBox="0 0 26 40" aria-hidden="true">
-          <defs>
-            <linearGradient id="pointer-gold" x1="0" y1="0" x2="1" y2="1">
-              <stop offset="0%" stopColor="#f6e7b0" />
-              <stop offset="50%" stopColor="#c9a35a" />
-              <stop offset="100%" stopColor="#7a5a24" />
-            </linearGradient>
-          </defs>
-          <path d="M13 40 L2 10 A11 11 0 1 1 24 10 Z" fill="url(#pointer-gold)" />
-          <circle cx="13" cy="11" r="3.5" fill="#0b0b0b" />
-        </svg>
-      </div>
-
-      <svg
-        viewBox="-100 -100 200 200"
-        className="relative h-full w-full drop-shadow-[0_24px_40px_rgba(0,0,0,0.7)]"
-        role="img"
-        aria-label="Prize wheel"
-      >
+      {/* Layer 1: metallic rim */}
+      <svg viewBox={VIEWBOX} className="absolute inset-0 h-full w-full drop-shadow-[0_24px_40px_rgba(0,0,0,0.7)]" aria-hidden="true">
         <defs>
-          <linearGradient id="rim-gold" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0%" stopColor="#f6e7b0" />
-            <stop offset="30%" stopColor="#c9a35a" />
-            <stop offset="55%" stopColor="#7a5a24" />
-            <stop offset="80%" stopColor="#e8d08a" />
-            <stop offset="100%" stopColor="#8a6a2f" />
-          </linearGradient>
-          <radialGradient id="sheen" cx="35%" cy="25%" r="75%">
-            <stop offset="0%" stopColor="#ffffff" stopOpacity="0.14" />
-            <stop offset="45%" stopColor="#ffffff" stopOpacity="0.03" />
-            <stop offset="100%" stopColor="#000000" stopOpacity="0.25" />
-          </radialGradient>
-          {WHEEL_SEGMENTS.map((_, i) => (
-            <clipPath key={i} id={`seg-${i}`}>
-              <path d={segmentPath(i)} />
-            </clipPath>
-          ))}
+          <RimGradient id="rim-gold" />
         </defs>
-
-        {/* Metallic rim */}
         <circle r="99" fill="url(#rim-gold)" />
         <circle r="93" fill="#0b0b0b" />
         <circle r="90" fill="none" stroke="url(#rim-gold)" strokeWidth="0.6" />
+      </svg>
 
-        {/* Rotating face */}
-        <g
-          style={{
-            transform: `rotate(${rotation}deg)`,
-            transition: spinning ? `transform ${SPIN_MS}ms cubic-bezier(0.16, 0.84, 0.18, 1)` : 'none',
-          }}
-        >
+      {/* Layer 2: rotating face */}
+      <div
+        data-wheel-face
+        className="absolute inset-0"
+        style={{
+          transform: `rotate(${rotation}deg)`,
+          WebkitTransform: `rotate(${rotation}deg)`,
+          transition: spinning ? `transform ${SPIN_MS}ms cubic-bezier(0.16, 0.84, 0.18, 1)` : 'none',
+          willChange: 'transform',
+        }}
+      >
+        <svg viewBox={VIEWBOX} className="h-full w-full" aria-hidden="true">
+          <defs>
+            {WHEEL_SEGMENTS.map((_, i) => (
+              <clipPath key={i} id={`seg-${i}`}>
+                <path d={segmentPath(i)} />
+              </clipPath>
+            ))}
+          </defs>
+
           {WHEEL_SEGMENTS.map((segment, i) => {
             const center = i * SEGMENT_ANGLE + SEGMENT_ANGLE / 2
             if (segment.type === 'prize') {
@@ -149,20 +142,43 @@ function Wheel({ rotation, spinning }) {
             return (
               <g key={`d-${i}`}>
                 <line x1="0" y1="0" x2={x} y2={y} stroke={GOLD} strokeWidth="0.7" strokeOpacity="0.85" />
-                <circle cx={sx} cy={sy} r="1.3" fill="url(#rim-gold)" />
+                <circle cx={sx} cy={sy} r="1.3" fill="#e8d08a" />
               </g>
             )
           })}
-        </g>
+        </svg>
+      </div>
 
-        {/* Glass sheen (does not rotate) */}
-        <circle r="88" fill="url(#sheen)" pointerEvents="none" />
-
-        {/* Hub */}
-        <circle r="23" fill="url(#rim-gold)" />
+      {/* Layer 3: glass sheen and hub (static) */}
+      <svg viewBox={VIEWBOX} className="pointer-events-none absolute inset-0 h-full w-full" aria-hidden="true">
+        <defs>
+          <RimGradient id="hub-gold" />
+          <radialGradient id="sheen" cx="35%" cy="25%" r="75%">
+            <stop offset="0%" stopColor="#ffffff" stopOpacity="0.14" />
+            <stop offset="45%" stopColor="#ffffff" stopOpacity="0.03" />
+            <stop offset="100%" stopColor="#000000" stopOpacity="0.25" />
+          </radialGradient>
+        </defs>
+        <circle r="88" fill="url(#sheen)" />
+        <circle r="23" fill="url(#hub-gold)" />
         <circle r="20.5" fill="#0b0b0b" />
         <image href="/mahindra-logo-white.png" x="-13" y="-10" width="26" height="19" preserveAspectRatio="xMidYMid meet" />
       </svg>
+
+      {/* Pointer */}
+      <div className="absolute left-1/2 top-[-10px] z-20 -translate-x-1/2 drop-shadow-[0_4px_6px_rgba(0,0,0,0.6)]">
+        <svg width="26" height="40" viewBox="0 0 26 40" aria-hidden="true">
+          <defs>
+            <linearGradient id="pointer-gold" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stopColor="#f6e7b0" />
+              <stop offset="50%" stopColor="#c9a35a" />
+              <stop offset="100%" stopColor="#7a5a24" />
+            </linearGradient>
+          </defs>
+          <path d="M13 40 L2 10 A11 11 0 1 1 24 10 Z" fill="url(#pointer-gold)" />
+          <circle cx="13" cy="11" r="3.5" fill="#0b0b0b" />
+        </svg>
+      </div>
     </div>
   )
 }
@@ -184,6 +200,7 @@ export default function SpinWheel({ surveyId, dealer, vehicleModel }) {
   const [phase, setPhase] = useState('ready') // ready | loading | spinning | win | lose | error
   const [outcome, setOutcome] = useState(null)
   const [rotation, setRotation] = useState(0)
+  const [errorCode, setErrorCode] = useState('')
   const timer = useRef(null)
 
   useEffect(() => () => clearTimeout(timer.current), [])
@@ -191,6 +208,7 @@ export default function SpinWheel({ surveyId, dealer, vehicleModel }) {
   const spin = async () => {
     if (phase !== 'ready' && phase !== 'error') return
     setPhase('loading')
+    setErrorCode('')
 
     let data
     try {
@@ -201,11 +219,19 @@ export default function SpinWheel({ surveyId, dealer, vehicleModel }) {
       })
       if (!response.ok) {
         const detail = await response.text().catch(() => '')
-        throw new Error(`Spin failed with status ${response.status}: ${detail}`)
+        const error = new Error(`Spin failed with status ${response.status}: ${detail}`)
+        error.code = String(response.status)
+        throw error
       }
       data = await response.json()
+      if (!data || (data.result !== 'win' && data.result !== 'lose')) {
+        const error = new Error(`Unexpected spin response: ${JSON.stringify(data)}`)
+        error.code = 'bad-response'
+        throw error
+      }
     } catch (error) {
       console.error(error)
+      setErrorCode(error.code || 'network')
       setPhase('error')
       return
     }
@@ -267,7 +293,10 @@ export default function SpinWheel({ surveyId, dealer, vehicleModel }) {
             {phase === 'error' && (
               <div role="alert" className="mt-6 flex items-start gap-2 rounded-lg border border-white/10 bg-white/5 p-3 text-xs text-white/80">
                 <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-[#c9a35a]" />
-                <span>We couldn't spin the wheel just now. Please try again.</span>
+                <span>
+                  We couldn't spin the wheel just now. Please try again.
+                  {errorCode && <span className="ml-1 text-white/40">(Error {errorCode})</span>}
+                </span>
               </div>
             )}
 
