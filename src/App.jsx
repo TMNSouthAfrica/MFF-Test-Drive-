@@ -290,13 +290,23 @@ export default function App() {
       })
       if (!response.ok) {
         const detail = await response.text().catch(() => '')
-        throw new Error(`Submit failed with status ${response.status}: ${detail}`)
+        const error = new Error(`Submit failed with status ${response.status}: ${detail}`)
+        // Short, safe reason for the on-screen error code (JSON errors from /api/submit only)
+        let reason = ''
+        try {
+          const json = JSON.parse(detail)
+          reason = [json.error, json.status && `Pabbly ${json.status}`].filter(Boolean).join(', ')
+        } catch {
+          // Not JSON (e.g. a 404 page)
+        }
+        error.code = reason ? `${response.status}: ${reason.slice(0, 80)}` : String(response.status)
+        throw error
       }
       setSubmittedAt(now)
       setIsComplete(true)
     } catch (error) {
       console.error(error)
-      setValidationError('Failed to submit survey. Please try again.')
+      setValidationError(`Failed to submit survey. Please try again. (Error ${error.code || 'network'})`)
     } finally {
       setIsSubmitting(false)
     }
