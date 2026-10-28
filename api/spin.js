@@ -1,6 +1,6 @@
 import { randomInt } from 'node:crypto'
 import { PRIZES } from '../src/config/prizes.js'
-import { forwardToPabbly } from './_pabbly.js'
+import { forwardToPabbly, summarise } from './_pabbly.js'
 
 // Total chance (0–1) that a spin wins any vehicle. Override with the SPIN_WIN_CHANCE env var.
 const DEFAULT_WIN_CHANCE = 0.5 // TESTING: 50% win / 50% lose. Lower before going live.
@@ -44,6 +44,7 @@ export default async function handler(req, res) {
     return res.status(200).json({
       ok: true,
       webhookConfigured: Boolean((process.env.PABBLY_SPIN_WEBHOOK_URL || process.env.PABBLY_WEBHOOK_URL || '').trim()),
+      webhookInUse: process.env.PABBLY_SPIN_WEBHOOK_URL ? 'PABBLY_SPIN_WEBHOOK_URL' : 'PABBLY_WEBHOOK_URL',
       winChance: getWinChance(),
       forcedResult: forced || null,
     })
@@ -87,7 +88,12 @@ export default async function handler(req, res) {
     // Record every spin so wins can be verified against the claim code
     const response = await forwardToPabbly(payload, process.env.PABBLY_SPIN_WEBHOOK_URL || process.env.PABBLY_WEBHOOK_URL)
     if (!response.ok) {
-      return res.status(502).json({ error: 'Could not record the spin', status: response.status })
+      return res.status(502).json({
+        error: 'Could not record the spin',
+        status: response.status,
+        pabblyMessage: summarise(response.text),
+        webhook: process.env.PABBLY_SPIN_WEBHOOK_URL ? 'PABBLY_SPIN_WEBHOOK_URL' : 'PABBLY_WEBHOOK_URL',
+      })
     }
   } catch (error) {
     console.error('Failed to record spin:', error)

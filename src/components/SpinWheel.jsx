@@ -220,7 +220,13 @@ export default function SpinWheel({ surveyId, dealer, vehicleModel }) {
       if (!response.ok) {
         const detail = await response.text().catch(() => '')
         const error = new Error(`Spin failed with status ${response.status}: ${detail}`)
-        error.code = String(response.status)
+        let pabblyStatus = ''
+        try {
+          pabblyStatus = JSON.parse(detail).status || ''
+        } catch {
+          // Not JSON (e.g. a 404 page)
+        }
+        error.code = pabblyStatus ? `${response.status} · Pabbly ${pabblyStatus}` : String(response.status)
         throw error
       }
       data = await response.json()

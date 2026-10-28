@@ -1,4 +1,4 @@
-import { forwardToPabbly } from './_pabbly.js'
+import { forwardToPabbly, summarise } from './_pabbly.js'
 
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*')
@@ -33,7 +33,9 @@ export default async function handler(req, res) {
     const pabblyResponse = await forwardToPabbly(req.body, webhookUrl)
 
     if (!pabblyResponse.ok) {
-      return res.status(502).json({ error: 'Pabbly rejected the submission', status: pabblyResponse.status })
+      return res
+        .status(502)
+        .json({ error: 'Pabbly rejected the submission', status: pabblyResponse.status, pabblyMessage: summarise(pabblyResponse.text) })
     }
 
     return res.status(200).json({ success: true, status: pabblyResponse.status })
