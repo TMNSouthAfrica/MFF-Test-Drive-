@@ -1,4 +1,5 @@
 import { forwardToPabbly, mondayItemIdFrom, summarise } from './_pabbly.js'
+import { surveyMondayFields } from './_monday.js'
 
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*')
@@ -45,7 +46,10 @@ export default async function handler(req, res) {
   }
 
   try {
-    const pabblyResponse = await forwardToPabbly({ ...body, mondayItemId }, webhookUrl)
+    const pabblyResponse = await forwardToPabbly(
+      { ...body, mondayItemId, ...surveyMondayFields(body) },
+      webhookUrl,
+    )
 
     if (!pabblyResponse.ok) {
       return res

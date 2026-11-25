@@ -1,6 +1,7 @@
 import { randomInt } from 'node:crypto'
 import { PRIZES } from '../src/config/prizes.js'
 import { forwardToPabbly, mondayItemIdFrom, summarise } from './_pabbly.js'
+import { spinMondayFields } from './_monday.js'
 
 // Total chance (0–1) that a spin wins any vehicle. Override with the SPIN_WIN_CHANCE env var.
 const DEFAULT_WIN_CHANCE = 0.5 // TESTING: 50% win / 50% lose. Lower before going live.
@@ -87,6 +88,7 @@ export default async function handler(req, res) {
     spunDate: spunAt.toISOString(),
     spunDateLocal: spunAt.toLocaleString('en-ZA', { dateStyle: 'full', timeStyle: 'short', timeZone: 'Africa/Johannesburg' }),
     device: clean(body.device, 500),
+    ...spinMondayFields({ won: Boolean(prize), spunDate: spunAt.toISOString() }),
   }
 
   try {

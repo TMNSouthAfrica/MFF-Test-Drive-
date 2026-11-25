@@ -28,6 +28,10 @@ npm run build
 - `dealer` → `dealer` in the payload, and appended to every question title
 - `expires` → after 23:59:59 local time on that date the Expired screen is shown
 
+## monday.com board
+
+Pabbly workflow "Test Drive Survey Submission Capture" routes on `responseType` and writes each answer to the Test Drive item (`mondayItemId`) on the **MFF Dealership Test Drives** board, one "Update Item Column Value" step per column. `api/_monday.js` adds board-ready fields to the payloads (`mondaySurveyStatus`, `mondayGrandPrizeEligible`, `mondayLowRating`, `mondayDissatisfactionReasons`, `mondaySurveyDate`, `mondayPopiaConsent`, `mondaySpinStatus`, `mondaySpinDate`). Their values must match the board's status/dropdown labels.
+
 ## Spin to win (thank-you page)
 
 After submitting, customers get one spin of a prize wheel (`src/components/SpinWheel.jsx`).
