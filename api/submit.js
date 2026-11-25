@@ -1,4 +1,4 @@
-import { forwardToPabbly, summarise } from './_pabbly.js'
+import { forwardToPabbly, mondayItemIdFrom, summarise } from './_pabbly.js'
 
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*')
@@ -29,8 +29,23 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: 'Webhook not configured' })
   }
 
+  let body = req.body || {}
+  if (typeof body === 'string') {
+    try {
+      body = JSON.parse(body)
+    } catch {
+      body = {}
+    }
+  }
+
+  // Every submission must belong to a Test Drive item on the Monday board
+  const mondayItemId = mondayItemIdFrom(body)
+  if (!mondayItemId) {
+    return res.status(400).json({ error: 'Missing Monday item ID' })
+  }
+
   try {
-    const pabblyResponse = await forwardToPabbly(req.body, webhookUrl)
+    const pabblyResponse = await forwardToPabbly({ ...body, mondayItemId }, webhookUrl)
 
     if (!pabblyResponse.ok) {
       return res

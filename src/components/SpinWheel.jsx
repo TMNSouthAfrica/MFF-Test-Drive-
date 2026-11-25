@@ -195,7 +195,7 @@ function Eyebrow({ children }) {
 
 const goldText = 'bg-gradient-to-r from-[#f6e7b0] via-[#c9a35a] to-[#e8d08a] bg-clip-text text-transparent'
 
-export default function SpinWheel({ surveyId, dealer, vehicleModel }) {
+export default function SpinWheel({ mondayItemId, surveyId, dealer, vehicleModel }) {
   // A new submission mounts a fresh wheel; ALLOW_RESPIN adds a "Spin again" button
   const [phase, setPhase] = useState('ready') // ready | loading | spinning | win | lose | error
   const [outcome, setOutcome] = useState(null)
@@ -215,7 +215,7 @@ export default function SpinWheel({ surveyId, dealer, vehicleModel }) {
       const response = await fetch('/api/spin', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ surveyId, dealer, vehicleModel, device: navigator.userAgent }),
+        body: JSON.stringify({ mondayItemId, surveyId, dealer, vehicleModel, device: navigator.userAgent }),
       })
       if (!response.ok) {
         const detail = await response.text().catch(() => '')

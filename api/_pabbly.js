@@ -40,6 +40,12 @@ export async function forwardToPabbly(payload, url = process.env.PABBLY_WEBHOOK_
   return result
 }
 
+// Monday item ID of the Test Drive (numeric string), or null if missing/invalid
+export const mondayItemIdFrom = (body) => {
+  const value = String(body?.mondayItemId ?? '').trim()
+  return /^\d{1,20}$/.test(value) ? value : null
+}
+
 // Short, plain-text version of Pabbly's reply for error responses
 export const summarise = (text) =>
   String(text || '')

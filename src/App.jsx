@@ -58,11 +58,33 @@ function readUrlParams() {
       isExpired = new Date() > endOfDay
     }
   }
+  // Monday item ID of the Test Drive this survey belongs to (always numeric)
+  const itemId = (params.get('itemId') || '').trim()
   return {
+    mondayItemId: /^\d+$/.test(itemId) ? itemId : null,
     surveyId: params.get('id'),
     dealerName: params.get('dealer'),
     isExpired,
   }
+}
+
+function LinkProblem({ title, message, detail }) {
+  return (
+    <div className="safe-area-bottom min-h-screen bg-gray-100">
+      <Header />
+      <div className="flex items-center justify-center px-4 py-12">
+        <Card className="w-full max-w-md shadow-xl">
+          <CardContent className="flex flex-col items-center p-8 text-center">
+            <Logo className="mb-6 h-16 sm:h-20" fallbackClassName="mb-6 text-3xl text-[#E31837]" />
+            <AlertCircle className="mb-4 h-16 w-16 text-[#E31837] sm:h-20 sm:w-20" />
+            <h1 className="mb-2 text-2xl font-bold text-[#1a1a1a]">{title}</h1>
+            <p className="mb-4 text-gray-600">{message}</p>
+            <p className="text-sm text-gray-500">{detail}</p>
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  )
 }
 
 // Falls back to a text wordmark until the real logo file is added to /public
@@ -123,7 +145,7 @@ export default function App() {
 
   const [currentTime, setCurrentTime] = useState(() => new Date())
 
-  const { surveyId, dealerName, isExpired } = useMemo(readUrlParams, [])
+  const { mondayItemId, surveyId, dealerName, isExpired } = useMemo(readUrlParams, [])
 
   useEffect(() => {
     const timer = setInterval(() => setCurrentTime(new Date()), 1000)
@@ -255,6 +277,7 @@ export default function App() {
 
     const payload = {
       name: `Test Drive Survey Response - ${now.toLocaleDateString()}`,
+      mondayItemId,
       surveyId: surveyId || null,
       dealer: dealerName || null,
       submittedDate: now.toISOString(),
@@ -312,26 +335,25 @@ export default function App() {
     }
   }
 
+  // ---------- Invalid link (no Monday item ID) ----------
+  if (!mondayItemId) {
+    return (
+      <LinkProblem
+        title="Invalid Survey Link"
+        message="This survey link is incomplete."
+        detail="Please open the full link from your WhatsApp message, or contact your Mahindra dealer for a new link."
+      />
+    )
+  }
+
   // ---------- Expired ----------
   if (isExpired) {
     return (
-      <div className="safe-area-bottom min-h-screen bg-gray-100">
-        <Header />
-        <div className="flex items-center justify-center px-4 py-12">
-          <Card className="w-full max-w-md shadow-xl">
-            <CardContent className="flex flex-col items-center p-8 text-center">
-              <Logo className="mb-6 h-16 sm:h-20" fallbackClassName="mb-6 text-3xl text-[#E31837]" />
-              <AlertCircle className="mb-4 h-16 w-16 text-[#E31837] sm:h-20 sm:w-20" />
-              <h1 className="mb-2 text-2xl font-bold text-[#1a1a1a]">Survey Link Expired</h1>
-              <p className="mb-4 text-gray-600">This survey link is no longer active.</p>
-              <p className="text-sm text-gray-500">
-                Survey links are valid for 7 days from the date they are issued. Please contact your Mahindra dealer if
-                you require a new link.
-              </p>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
+      <LinkProblem
+        title="Survey Link Expired"
+        message="This survey link is no longer active."
+        detail="Survey links are valid for 7 days from the date they are issued. Please contact your Mahindra dealer if you require a new link."
+      />
     )
   }
 
@@ -355,7 +377,7 @@ export default function App() {
             </CardContent>
           </Card>
 
-          <SpinWheel surveyId={surveyId} dealer={dealerName} vehicleModel={vehicleModel} />
+          <SpinWheel mondayItemId={mondayItemId} surveyId={surveyId} dealer={dealerName} vehicleModel={vehicleModel} />
         </div>
       </div>
     )

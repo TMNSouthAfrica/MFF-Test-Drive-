@@ -1,6 +1,6 @@
 import { randomInt } from 'node:crypto'
 import { PRIZES } from '../src/config/prizes.js'
-import { forwardToPabbly, summarise } from './_pabbly.js'
+import { forwardToPabbly, mondayItemIdFrom, summarise } from './_pabbly.js'
 
 // Total chance (0–1) that a spin wins any vehicle. Override with the SPIN_WIN_CHANCE env var.
 const DEFAULT_WIN_CHANCE = 0.5 // TESTING: 50% win / 50% lose. Lower before going live.
@@ -61,6 +61,10 @@ export default async function handler(req, res) {
     }
   }
 
+  // Every spin must belong to a Test Drive item on the Monday board
+  const mondayItemId = mondayItemIdFrom(body)
+  if (!mondayItemId) return res.status(400).json({ error: 'Missing Monday item ID' })
+
   const prize = draw()
   const spunAt = new Date()
   const result = {
@@ -73,6 +77,7 @@ export default async function handler(req, res) {
   const payload = {
     name: `Spin Result - ${prize ? `WIN ${prize.name}` : 'No win'}`,
     responseType: 'Spin Result',
+    mondayItemId,
     surveyId: clean(body.surveyId),
     dealer: clean(body.dealer),
     vehicleModel: clean(body.vehicleModel),
