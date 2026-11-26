@@ -21,9 +21,10 @@ npm run build
 
 ## URL parameters
 
-`/?itemId=1234567890&id=12345&dealer=Mahindra%20Sandton&expires=2026-10-12`
+`/?itemId=1234567890&model=XUV700&id=12345&dealer=Mahindra%20Sandton&expires=2026-10-12`
 
 - `itemId` (**required**) → `mondayItemId` in both the survey and spin payloads: the Monday item ID of the customer's Test Drive, so Pabbly can update that item. Must be numeric. Without it the "Invalid Survey Link" screen is shown, and `/api/submit` and `/api/spin` reject the request with 400.
+- `model` (optional) → pre-selects the vehicle on question 1 (the customer can still change it). Accepts `3XO`, `XUV700` (also the board's `XUV7OO`), `Scorpio N`/`Scorpio-N`, `PIK UP Single Cab`, `PIK UP Double Cab`; case, spaces and dashes are ignored. Unknown values are ignored. URL-encode spaces (`Scorpio%20N`).
 - `id` → `surveyId` in the payload
 - `dealer` → `dealer` in the payload, and appended to every question title
 - `expires` → after 23:59:59 local time on that date the Expired screen is shown

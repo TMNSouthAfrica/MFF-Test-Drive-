@@ -19,6 +19,17 @@ const RATING_OPTIONS = [
 
 const VEHICLE_MODELS = ['3XO', 'XUV700', 'Scorpio N', 'PIK UP Single Cab', 'PIK UP Double Cab']
 
+// ?model= in the survey link pre-selects the vehicle. Matching ignores case, spaces and dashes,
+// and accepts the monday board's "XUV7OO" spelling (letter O) for XUV700.
+const MODEL_ALIASES = { xuv7oo: 'XUV700', pickupsinglecab: 'PIK UP Single Cab', pickupdoublecab: 'PIK UP Double Cab' }
+const modelKey = (value) => String(value || '').toLowerCase().replace(/[^a-z0-9]/g, '')
+
+function modelFromUrl() {
+  const key = modelKey(new URLSearchParams(window.location.search).get('model'))
+  if (!key) return ''
+  return VEHICLE_MODELS.find((m) => modelKey(m) === key) || MODEL_ALIASES[key] || ''
+}
+
 const DISSATISFACTION_REASONS = [
   'Route was not suitable for the vehicle',
   'Sales Consultant was not knowledgeable about the vehicle',
@@ -126,7 +137,7 @@ export default function App() {
   const [submittedAt, setSubmittedAt] = useState(null)
   const [validationError, setValidationError] = useState('')
 
-  const [vehicleModel, setVehicleModel] = useState('')
+  const [vehicleModel, setVehicleModel] = useState(modelFromUrl)
   const [overallExperience, setOverallExperience] = useState(null)
   const [dissatisfactionReason, setDissatisfactionReason] = useState([])
   const [otherReasonText, setOtherReasonText] = useState('')
