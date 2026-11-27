@@ -21,12 +21,13 @@ npm run build
 
 ## URL parameters
 
-`/?itemId=1234567890&model=XUV700&id=12345&dealer=Mahindra%20Sandton&expires=2026-10-12`
+`/?itemId=1234567890&model=XUV700&dealer=Mahindra%20Sandton&region=Gauteng&id=12345&expires=2026-10-12`
 
 - `itemId` (**required**) → `mondayItemId` in both the survey and spin payloads: the Monday item ID of the customer's Test Drive, so Pabbly can update that item. Must be numeric. Without it the "Invalid Survey Link" screen is shown, and `/api/submit` and `/api/spin` reject the request with 400.
 - `model` (optional) → pre-selects the vehicle on question 1 (the customer can still change it). Accepts `3XO`, `XUV700` (also the board's `XUV7OO`), `Scorpio N`/`Scorpio-N`, `PIK UP Single Cab`, `PIK UP Double Cab`; case, spaces and dashes are ignored. Unknown values are ignored. URL-encode spaces (`Scorpio%20N`).
 - `id` → `surveyId` in the payload
-- `dealer` → `dealer` in the payload, and appended to every question title
+- `dealer` → `dealer` in the payload, appended to every question title, and the dealership whose weekly merchandise allocation a win uses
+- `region` → the dealership's region (the board's Region field); sets the weekly merchandise allocation (see below)
 - `expires` → after 23:59:59 local time on that date the Expired screen is shown
 
 ## monday.com board
@@ -35,11 +36,11 @@ Pabbly workflow "Test Drive Survey Submission Capture" routes on `responseType` 
 
 ## Spin to win (thank-you page)
 
-After submitting, customers get one spin of a prize wheel (`src/components/SpinWheel.jsx`).
+After submitting, customers get **one** spin of the wheel (`src/components/SpinWheel.jsx`). Phase 1 of the MFF brief (p.4): **Mahindra merchandise only, win / no win**; winners collect at the dealership with their claim code.
 
-- **The server decides the result.** `api/spin.js` draws win/lose (`SPIN_WIN_CHANCE`, currently 50% for testing), then the wheel animates to land on it. The browser cannot choose its own result.
-- **Every spin is recorded** in Pabbly with `responseType: "Spin Result"`, `spinResult`, `prize` and a `claimCode` (e.g. `MSA-7KQ2-X9PD`), plus `mondayItemId`, `surveyId`, `dealer` and `vehicleModel`. Verify winners' claim codes against these records. If recording fails, no result is shown.
-- **Prizes and wheel layout** are in `src/config/prizes.js`; vehicle photos are in `public/prizes/`.
-- **One spin per submission.** Every completed submission gets a fresh spin, including resubmissions from the same link. To limit wins per customer, filter by `surveyId` in Pabbly.
-- **Respins (testing):** `ALLOW_RESPIN` in `src/config/prizes.js` is currently `true`, which shows a "Spin again" button after every result. Set it to `false` before going live.
-- **Testing:** set `SPIN_FORCE_RESULT=win` (or `lose`, `3xo`, `xuv700`, `scorpio-n`) on a Preview deployment only.
+- **One spin per test drive.** The result is stored against the Monday item ID; opening the link again replays the same result (no new spin).
+- **Weekly merchandise allocation per dealership, by region** (`src/config/prizes.js`): Gauteng 5, Western Cape 10, KwaZulu-Natal 10 (also `KZN`), every other region 1 per dealership per week. Weeks reset Monday 00:00 SAST.
+- **The server decides the result.** While the dealer still has merchandise left this week, a spin wins with probability `SPIN_WIN_CHANCE` (default 30%); once the allocation is used up, every spin is "No luck" until Monday.
+- **Storage:** Upstash Redis via Vercel's Marketplace (`KV_REST_API_URL` / `KV_REST_API_TOKEN`, or `UPSTASH_REDIS_REST_URL` / `UPSTASH_REDIS_REST_TOKEN`). Required in production; locally an in-memory stand-in is used. Open `/api/spin` to see `storeConfigured`, `winChance` and the current `week`.
+- **Every spin is recorded** in Pabbly with `responseType: "Spin Result"`, `spinResult`, `prize`, `claimCode` (e.g. `MSA-7KQ2-X9PD`), `dealer`, `region`, `weekStarting`, `weeklyAllocation`, `mondayItemId` and `vehicleModel`. If recording fails, the spin is undone and the customer can try again.
+- **Testing:** `SPIN_FORCE_RESULT=win` or `lose` on a Preview deployment only (a forced win still respects the weekly allocation).

@@ -75,6 +75,7 @@ function readUrlParams() {
     mondayItemId: /^\d+$/.test(itemId) ? itemId : null,
     surveyId: params.get('id'),
     dealerName: params.get('dealer'),
+    region: params.get('region'),
     isExpired,
   }
 }
@@ -156,7 +157,7 @@ export default function App() {
 
   const [currentTime, setCurrentTime] = useState(() => new Date())
 
-  const { mondayItemId, surveyId, dealerName, isExpired } = useMemo(readUrlParams, [])
+  const { mondayItemId, surveyId, dealerName, region, isExpired } = useMemo(readUrlParams, [])
 
   useEffect(() => {
     const timer = setInterval(() => setCurrentTime(new Date()), 1000)
@@ -388,7 +389,7 @@ export default function App() {
             </CardContent>
           </Card>
 
-          <SpinWheel mondayItemId={mondayItemId} surveyId={surveyId} dealer={dealerName} vehicleModel={vehicleModel} />
+          <SpinWheel mondayItemId={mondayItemId} surveyId={surveyId} dealer={dealerName} region={region} vehicleModel={vehicleModel} />
         </div>
       </div>
     )

@@ -1,17 +1,15 @@
 import { useEffect, useRef, useState } from 'react'
 import confetti from 'canvas-confetti'
-import { AlertCircle, RotateCw } from 'lucide-react'
+import { AlertCircle, Gift } from 'lucide-react'
 import { cn } from '@lib/utils'
-import { ALLOW_RESPIN, PRIZES, WHEEL_SEGMENTS } from '@/config/prizes'
+import { PRIZE, WHEEL_SEGMENTS } from '@/config/prizes'
 
 const SPIN_MS = 6500
 const SEGMENT_ANGLE = 360 / WHEEL_SEGMENTS.length
-const PRIZE_BG = '#171717' // matches the background of the vehicle photos
+const PRIZE_BG = '#3a2c12' // warm gold-brown for merchandise segments
 const LOSE_COLORS = ['#0b0b0b', '#242424']
 const GOLD = '#c9a35a'
-const CHAMPAGNE = '#e8d5a3'
-
-const prizeById = (id) => PRIZES.find((p) => p.id === id)
+const CHAMPAGNE = '#f6e7b0'
 
 const polar = (r, deg) => {
   const rad = (deg * Math.PI) / 180
@@ -90,25 +88,22 @@ function Wheel({ rotation, spinning }) {
           {WHEEL_SEGMENTS.map((segment, i) => {
             const center = i * SEGMENT_ANGLE + SEGMENT_ANGLE / 2
             if (segment.type === 'prize') {
-              const prize = prizeById(segment.prizeId)
               return (
                 <g key={i}>
                   <path d={segmentPath(i)} fill={PRIZE_BG} />
-                  <g clipPath={`url(#seg-${i})`}>
-                    <g transform={`rotate(${center})`}>
-                      <image href={prize.image} x="-27" y="-76" width="54" height="36" preserveAspectRatio="xMidYMid meet" />
-                      <text
-                        y="-79"
-                        textAnchor="middle"
-                        fill={CHAMPAGNE}
-                        fontSize="5.6"
-                        fontWeight="600"
-                        letterSpacing="1.2"
-                        style={{ fontFamily: 'Manrope, sans-serif', textTransform: 'uppercase' }}
-                      >
-                        {prize.name}
-                      </text>
-                    </g>
+                  <g transform={`rotate(${center - 90})`}>
+                    <text
+                      x="57"
+                      y="2.2"
+                      textAnchor="middle"
+                      fill={CHAMPAGNE}
+                      fontSize="7"
+                      fontWeight="700"
+                      letterSpacing="1.6"
+                      style={{ fontFamily: 'Manrope, sans-serif', textTransform: 'uppercase' }}
+                    >
+                      {PRIZE.label}
+                    </text>
                   </g>
                 </g>
               )
@@ -195,8 +190,8 @@ function Eyebrow({ children }) {
 
 const goldText = 'bg-gradient-to-r from-[#f6e7b0] via-[#c9a35a] to-[#e8d08a] bg-clip-text text-transparent'
 
-export default function SpinWheel({ mondayItemId, surveyId, dealer, vehicleModel }) {
-  // A new submission mounts a fresh wheel; ALLOW_RESPIN adds a "Spin again" button
+export default function SpinWheel({ mondayItemId, surveyId, dealer, region, vehicleModel }) {
+  // One spin per test drive: the server remembers the result and returns it if the link is opened again
   const [phase, setPhase] = useState('ready') // ready | loading | spinning | win | lose | error
   const [outcome, setOutcome] = useState(null)
   const [rotation, setRotation] = useState(0)
@@ -215,7 +210,7 @@ export default function SpinWheel({ mondayItemId, surveyId, dealer, vehicleModel
       const response = await fetch('/api/spin', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ mondayItemId, surveyId, dealer, vehicleModel, device: navigator.userAgent }),
+        body: JSON.stringify({ mondayItemId, surveyId, dealer, region, vehicleModel, device: navigator.userAgent }),
       })
       if (!response.ok) {
         const detail = await response.text().catch(() => '')
@@ -244,14 +239,13 @@ export default function SpinWheel({ mondayItemId, surveyId, dealer, vehicleModel
 
     // Land on the segment that matches the server's result
     const candidates = WHEEL_SEGMENTS.map((s, i) => ({ s, i })).filter(({ s }) =>
-      data.result === 'win' ? s.type === 'prize' && s.prizeId === data.prizeId : s.type === 'lose'
+      data.result === 'win' ? s.type === 'prize' : s.type === 'lose'
     )
     const target = candidates[Math.floor(Math.random() * candidates.length)].i
     const center = target * SEGMENT_ANGLE + SEGMENT_ANGLE / 2
     const jitter = (Math.random() - 0.5) * SEGMENT_ANGLE * 0.35 // stay well inside the segment
     const reducedMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
     const turns = reducedMotion ? 1 : 6
-    // Continue from where the wheel stopped last time so respins always turn forwards
     setRotation((current) => Math.ceil(current / 360) * 360 + turns * 360 + (360 - center) + jitter)
     setPhase('spinning')
 
@@ -264,12 +258,6 @@ export default function SpinWheel({ mondayItemId, surveyId, dealer, vehicleModel
     }, SPIN_MS + 300)
   }
 
-  const spinAgain = () => {
-    setOutcome(null)
-    setPhase('ready')
-  }
-
-  const prize = outcome?.prizeId ? prizeById(outcome.prizeId) : null
   const showWheel = phase === 'ready' || phase === 'loading' || phase === 'spinning' || phase === 'error'
   const busy = phase === 'loading' || phase === 'spinning'
 
@@ -285,12 +273,13 @@ export default function SpinWheel({ mondayItemId, surveyId, dealer, vehicleModel
             <div className="mb-8 text-center">
               <Eyebrow>Exclusive reward</Eyebrow>
               <h2 className="mt-4 text-2xl font-light leading-snug tracking-wide sm:text-[28px]">
-                A chance to drive home
+                Spin to win
                 <br />
-                <span className={cn('font-semibold', goldText)}>a new Mahindra</span>
+                <span className={cn('font-semibold', goldText)}>Mahindra merchandise</span>
               </h2>
               <p className="mx-auto mt-3 max-w-xs text-xs leading-relaxed text-white/55">
-                As thanks for your feedback, spin the wheel. Should it come to rest on a vehicle, it is yours.
+                As thanks for your feedback, you get one spin. Land on Merch and collect your Mahindra merchandise at the
+                dealership.
               </p>
             </div>
 
@@ -324,26 +313,24 @@ export default function SpinWheel({ mondayItemId, surveyId, dealer, vehicleModel
           </>
         )}
 
-        {phase === 'win' && prize && (
+        {phase === 'win' && outcome && (
           <div className="text-center" aria-live="polite">
             <Eyebrow>Congratulations</Eyebrow>
-            <h2 className="mt-4 text-2xl font-light tracking-wide sm:text-[28px]">
-              You have won the
-              <br />
-              <span className={cn('font-semibold', goldText)}>Mahindra {prize.name}</span>
-            </h2>
-
-            <div className="relative mx-auto mt-6 overflow-hidden rounded-xl border border-[#c9a35a]/40 bg-[#171717]">
-              <img src={prize.image} alt={`Mahindra ${prize.name}`} className="w-full" />
-              <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
+            <div className="mx-auto mt-5 flex h-16 w-16 items-center justify-center rounded-full border border-[#c9a35a]/50 bg-[#3a2c12]">
+              <Gift className="h-8 w-8 text-[#f6e7b0]" />
             </div>
+            <h2 className="mt-4 text-2xl font-light tracking-wide sm:text-[28px]">
+              You have won
+              <br />
+              <span className={cn('font-semibold', goldText)}>Mahindra merchandise</span>
+            </h2>
 
             <div className="mt-6 rounded-xl border border-[#c9a35a]/40 bg-gradient-to-b from-white/[0.04] to-transparent px-4 py-5">
               <p className="text-[10px] font-semibold uppercase tracking-[0.35em] text-white/50">Your claim code</p>
               <p className={cn('mt-2 select-all whitespace-nowrap text-xl font-semibold tracking-[0.12em] sm:text-2xl sm:tracking-[0.2em]', goldText)}>{outcome.claimCode}</p>
               <p className="mx-auto mt-3 max-w-xs text-xs leading-relaxed text-white/60">
-                Please keep this code safe. A Mahindra South Africa representative will be in touch to verify your win and
-                arrange the handover.
+                Show this code at {outcome.dealer || dealer || 'your Mahindra dealership'} to collect your merchandise. Please
+                keep it safe; the dealership will verify it before handing over your prize.
               </p>
             </div>
             <p className="mt-4 text-[10px] uppercase tracking-[0.2em] text-white/35">Terms and conditions apply</p>
@@ -353,27 +340,12 @@ export default function SpinWheel({ mondayItemId, surveyId, dealer, vehicleModel
         {phase === 'lose' && (
           <div className="py-6 text-center" aria-live="polite">
             <Eyebrow>Thank you</Eyebrow>
-            <h2 className="mt-4 text-2xl font-light tracking-wide sm:text-[28px]">Not this time</h2>
+            <h2 className="mt-4 text-2xl font-light tracking-wide sm:text-[28px]">No luck this time</h2>
             <p className="mx-auto mt-3 max-w-xs text-sm font-light leading-relaxed text-white/60">
-              The wheel didn't land on a vehicle today. We truly appreciate you sharing your experience with us.
+              The wheel didn't land on merchandise today. We truly appreciate you sharing your experience with us, and
+              your completed survey still enters you into the MFF Grand Prize draw.
             </p>
-            {!ALLOW_RESPIN && (
-              <p className="mt-5 text-[10px] uppercase tracking-[0.2em] text-white/35">
-                Complete another test drive survey for another spin
-              </p>
-            )}
           </div>
-        )}
-
-        {ALLOW_RESPIN && (phase === 'win' || phase === 'lose') && (
-          <button
-            type="button"
-            onClick={spinAgain}
-            className="mx-auto mt-6 flex h-11 items-center justify-center gap-2 rounded-full border border-[#c9a35a]/50 px-6 text-[11px] font-semibold uppercase tracking-[0.3em] text-[#e8d5a3] transition-colors hover:border-[#c9a35a] hover:bg-[#c9a35a]/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#e8d08a]"
-          >
-            <RotateCw className="h-3.5 w-3.5" />
-            Spin again
-          </button>
         )}
       </div>
     </div>
